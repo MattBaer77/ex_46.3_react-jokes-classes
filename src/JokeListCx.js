@@ -1,8 +1,6 @@
 import React from "react";
 import axios from "axios";
-// import JokeCx from "./JokeCx";
-import Joke from "./Joke";
-
+import JokeCx from "./JokeCx";
 import "./JokeList.css";
 
 class JokeListCx extends React.Component {
@@ -12,21 +10,30 @@ class JokeListCx extends React.Component {
 
         super(props);
         this.numJokesToGet = 10;
-        this.state = { jokes:[], random : "hello" }
+        this.state = { jokes:[] }
         this.vote = this.vote.bind(this);
         this.generateNewJokes = this.generateNewJokes.bind(this);
 
     }
 
-    // Defined here ...
+    componentDidMount() {
+
+        if (this.state.jokes.length === 0) this.getJokes();
+
+    }
+
+    componentDidUpdate() {
+
+        if (this.state.jokes.length === 0) this.getJokes();
+
+    }
+
     getJokes = async() => {
-        console.log(this)
         let j = [...this.state.jokes];
         let seenJokes = new Set();
         try {
           while (j.length < this.numJokesToGet) {
-            console.log("calling")
-            console.log(j)
+
             let res = await axios.get("https://icanhazdadjoke.com", {
               headers: { Accept: "application/json" }
             });
@@ -38,6 +45,7 @@ class JokeListCx extends React.Component {
             } else {
               console.error("duplicate found!");
             }
+            
           }
 
           this.setState( {jokes : [...j]} );
@@ -55,43 +63,15 @@ class JokeListCx extends React.Component {
 
     vote = (id, delta) => {
 
-        this.setState({jokes : [ ...(allJokes) => {
-
-            allJokes.map(j => (j.id === id ? { ...j, votes: j.votes + delta } : j))
-
-        }]});
-
-    }
-
-    componentDidMount() {
-
-        // Was defined here...
-
-        if (this.state.jokes.length === 0) this.getJokes();
+        this.setState(st => ({
+            jokes: st.jokes.map(j =>
+              j.id === id ? { ...j, votes: j.votes + delta } : j
+            )
+          }));
 
     }
 
     render () {
-
-        // return (
-        //     <div>
-        //         {this.state.jokes.map(j => <p>{j.joke}</p>)}
-        //     </div>
-        // )
-
-        // return (
-
-        //     <div className="JokeList">
-        //     <button className="JokeList-getmore" onClick={this.generateNewJokes}>
-        //       Get New Jokes
-        //     </button>
-      
-        //     {this.state.jokes.map(j => (
-        //       <Joke text={j.joke} key={j.id} id={j.id} votes={j.votes} vote={this.vote} />
-        //     ))}
-        //   </div>
-
-        // )
 
         if (this.state.jokes.length) {
             let sortedJokes = [...this.state.jokes].sort((a, b) => b.votes - a.votes);
@@ -103,7 +83,7 @@ class JokeListCx extends React.Component {
                 </button>
           
                 {sortedJokes.map(j => (
-                  <Joke text={j.joke} key={j.id} id={j.id} votes={j.votes} vote={this.vote} />
+                  <JokeCx text={j.joke} key={j.id} id={j.id} votes={j.votes} vote={this.vote} />
                 ))}
               </div>
             );
